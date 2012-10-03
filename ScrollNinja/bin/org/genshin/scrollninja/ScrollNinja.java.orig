@@ -1,0 +1,213 @@
+package org.genshin.scrollninja;
+
+import com.badlogic.gdx.Game;
+
+public class ScrollNinja extends Game {
+
+	@Override
+	public void create() {
+<<<<<<< HEAD
+=======
+		
+		Status.running(true);
+		Status.setGameMode(Status.RunModes.MAIN_MENU.ordinal());
+		while (Status.running()) {
+			int mode = Status.getGameMode();
+			
+			if (mode == Status.RunModes.MAIN_MENU.ordinal()) {
+				//MainMenu.show();
+			} else if (mode == Status.RunModes.SETTINGS.ordinal()) {
+				
+			} else if (mode == Status.RunModes.GAME_INIT.ordinal()) {
+				
+			} else if (mode == Status.RunModes.GAME_RUN.ordinal()) {
+				
+			} else if (mode == Status.RunModes.SHUTDOWN.ordinal()) {
+				
+				return;
+			}
+		}
+		
+		
+		//rotation = 0;
+
+		// ウインドウサイズ取得
+		//float w = Gdx.graphics.getWidth();
+		//float h = Gdx.graphics.getHeight();
+
+		// カメラをウインドウサイズで作成
+		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		// スプライトバッチ作成
+		batch = new SpriteBatch();
+
+		// シミュレーション世界の作成
+		// 第二引数を真にすると、物理エンジン内で活動的に動いていない物体に対して衝突検知などの
+		// 演算を行わないように設定できる、というものらしい。
+		/** 重力がきちんと反映されてない？　要検証… **/
+		world = new World(new Vector2(0, -100f), true);
+		renderer = new Box2DDebugRenderer();
+		// フィールド作成
+		createWorld();
+
+		// 背景(手前)テクスチャ読み込み
+		texture = new Texture(Gdx.files.internal("data/stage_near_test.png"));
+		// コメントアウトしても動く。効果がいまいちわからない…
+		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		// テクスチャ範囲
+		TextureRegion region = new TextureRegion(texture, 0, 0, 2048, 2048);
+		// 背景スプライトにセット
+		stageSpr = new Sprite(region);
+		// 中心
+		stageSpr.setOrigin(stageSpr.getWidth() / 2, stageSpr.getHeight() / 2);
+		// 0,0 だと画面の中央に背景画像の左下が設置されるため調整
+		// 画面下の方が空白なので高さ位置はどう出したものかと…
+		stageSpr.setPosition(-(Gdx.graphics.getWidth() / 2), -1024);
+
+		// 背景（奥）テクスチャ読み込み
+		texture = new Texture(Gdx.files.internal("data/stage_far_test.png"));
+		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		region = new TextureRegion(texture, 0, 0, 1024, 1024);
+		// 背景スプライトにセット
+		bgSpr = new Sprite(region);
+		bgSpr.setOrigin(bgSpr.getWidth() / 2, bgSpr.getHeight() / 2);
+		bgSpr.setPosition(-(Gdx.graphics.getWidth() / 2), -660);
+
+		// キャラクターテクスチャ読み込み
+		texture = new Texture(Gdx.files.internal("data/chara.png"));
+		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		region = new TextureRegion(texture, 0, 0, 64, 64);
+		// キャラクタースプライトにセット
+		charaSpr = new Sprite(region);
+		charaSpr.setOrigin(charaSpr.getWidth() / 2, charaSpr.getHeight() / 2);
+		// キャラクター作成
+		createChara();
+
+		/*
+		// オブジェクトテクスチャ読み込み
+		texture = new Texture(Gdx.files.internal("data/chara.png"));
+		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		region = new TextureRegion(texture, 0, 0, 64, 64);
+		// オブジェクトスプライトにセット
+		sprObj = new Sprite(region);
+		sprObj.setOrigin(sprObj.getWidth() / 2, sprObj.getHeight() / 2);
+		// とりあえず真ん中に
+		sprObj.setPosition(0, 0);
+		// オブジェクト作成
+		createObj();
+		*/
+
+		// アニメーション
+		Texture dash = new Texture(Gdx.files.internal("data/dash_test.png"));
+
+		// サウンド
+		sound = Gdx.audio.newSound(Gdx.files.internal("data/sound/foot_step.ogg"));
+		music = Gdx.audio.newMusic(Gdx.files.internal("data/BGM.wav"));
+		music.setLooping(true);
+		//music.play();
+	}
+
+	// フィールド（床）作成
+	private void createWorld() {
+		 // BodyEditorで作成したものを読み込む
+		BodyEditorLoader loader =
+				new BodyEditorLoader(Gdx.files.internal("data/test.json"));
+
+		// Bodyのタイプを設定 Staticは動かない物体
+		BodyDef bd = new BodyDef();
+		bd.type = BodyType.StaticBody;
+		bd.position.set(-(Gdx.graphics.getWidth() / 2), -1024);
+
+		// Bodyの設定を設定
+		FixtureDef fd = new FixtureDef();
+		fd.density = 1000;				// 密度
+		fd.friction = 100f;				// 摩擦
+		fd.restitution = 0;				// 反発係数
+
+		// Bodyを作成
+		groundBody = world.createBody(bd);
+
+		// 各種設定を適用。引数は　Body、JSON中身のどのデータを使うか、FixtureDef、サイズ
+		loader.attachFixture(groundBody, "bgTest", fd, 2048);
+
+		/*
+		// ボディタイプの設定　Staticは動かない物体
+		BodyDef def = new BodyDef();
+		def.type = BodyType.StaticBody;
+		// 物体作成
+		Body ground = world.createBody(def);
+
+		// 物体の形を作成
+		PolygonShape poly = new PolygonShape();
+		// 物体のサイズ
+		poly.setAsBox(400, 100);
+		// 物体に設定？
+		playerPhysicsFixture = ground.createFixture(poly, 1);
+		// 解放しておく
+		poly.dispose();
+
+		groundBody = ground;
+		// とりあえずの位置
+		ground.setTransform(0, -200, 0);
+		*/
+	}
+
+	// キャラクター作成
+	private void createChara() {
+		/*
+		// BodyEditorで作成したものを読み込む
+		BodyEditorLoader loader =
+				new BodyEditorLoader(Gdx.files.internal("data/test.json"));
+
+		// Bodyのタイプを設定
+		BodyDef bd = new BodyDef();
+		bd.position.set(0, 0);
+		bd.type = BodyType.DynamicBody;
+
+		// Bodyの設定を設定
+		FixtureDef fd = new FixtureDef();
+		fd.density = 50;				// 密度
+		fd.friction = 100f;				// 摩擦
+		fd.restitution = 0;				// 反発係数
+
+		// Bodyを作成
+		charaBody = world.createBody(bd);
+		//charaBody.resetMassData();
+		//charaBody.setLinearVelocity(new Vector2(0, 10));
+
+		// 各種設定を適用。引数は　Body、JSON中身のどのデータを使うか、FixtureDef、サイズ
+		loader.attachFixture(charaBody, "charaTest", fd, 64);
+		// スプライト追随用にOriginを保存しておく
+		charaOrigin = loader.getOrigin("charaTest", 64).cpy();
+		*/
+
+		// ボディタイプの設定　Dynamicは動く（動かされる）物体
+		BodyDef def = new BodyDef();
+		def.type = BodyType.DynamicBody;
+		charaBody = world.createBody(def);
+
+		// 物体の形を作成
+		PolygonShape poly = new PolygonShape();
+		poly.setAsBox(16, 24);
+		// Bodyの設定を設定
+		FixtureDef fd = new FixtureDef();
+		fd.density = 50;				// 密度
+		fd.friction = 100f;				// 摩擦
+		fd.restitution = 0;				// 反発係数
+		fd.shape = poly;
+		// 設定を入れる
+		charaBody.createFixture(fd);
+>>>>>>> kagetsuki/master
+
+		/** 設定の事前ロードとかあればここで実行 */
+
+		// メインメニュー画面セット
+		setScreen(new MainMenu(this));
+	}
+
+	@Override
+	public void dispose() {
+		// 最後の処理
+		super.dispose();
+		getScreen().dispose();
+	}
+}
