@@ -40,6 +40,7 @@ public class GameScreen implements Screen {
 	private Sprite stageSpr;
 	private Sprite bgSpr;
 	private Sprite charaSpr;
+	private Sprite stoneSpr;
 
 	// アニメーション
 	private TextureRegion region;
@@ -55,6 +56,8 @@ public class GameScreen implements Screen {
 	private Body charaBody;
 	private Body groundBody;
 	private Fixture playerSensorFixture;
+	private Body stoneBody;
+	private Fixture stoneFixture;
 
 	// 移動用
 	private Vector2 charaPos = new Vector2();
@@ -125,13 +128,16 @@ public class GameScreen implements Screen {
 		// キャラクタースプライトにセット
 		charaSpr = new Sprite(region);
 		charaSpr.setOrigin(charaSpr.getWidth() / 2, charaSpr.getHeight() / 2);
+
+		// 墓石
+		texture = new Texture(Gdx.files.internal("data/obj_gravestone.png"));
+		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		tmpRegion = new TextureRegion(texture, 0, 0, 256, 256);
+		stoneSpr = new Sprite(tmpRegion);
+		stoneSpr.setPosition(0, 0);
+
 		// キャラクター作成
 		createChara();
-		/*
-		character = new Character();
-		character.createSprite();
-		character.createBox(world);
-		*/
 
 		// アニメーション
 		Texture dash = new Texture(Gdx.files.internal("data/dash_test.png"));
@@ -144,7 +150,7 @@ public class GameScreen implements Screen {
 					frame[index++] = tmp[i][j];
 			}
 		}
-		dashAnime = new Animation(0.05f, frame);
+		dashAnime = new Animation(0.1f, frame);
 		//charaSpr = new Sprite(curFrame);
 		stateTime = 0f;
 
@@ -206,6 +212,27 @@ public class GameScreen implements Screen {
 		charaBody.setBullet(true);
 		// 最初の出現で埋まることがあるので上の方にセットしておく
 		charaBody.setTransform(0, 300, 0);
+
+		// BodyEditorで作成した当たり判定を読み込む
+		BodyEditorLoader loader =
+				new BodyEditorLoader(Gdx.files.internal("data/stageObject.json"));
+
+		// Bodyのタイプを設定 Staticは動かない物体
+		BodyDef bd = new BodyDef();
+		bd.type = BodyType.StaticBody;
+		bd.position.set(0, 0);
+
+		// Bodyの設定を設定
+		fd = new FixtureDef();
+		fd.density = 1000;				// 密度
+		fd.friction = 100f;				// 摩擦
+		fd.restitution = 0;				// 反発係数
+
+		// Bodyを作成
+		stoneBody = world.createBody(bd);
+
+		// 各種設定を適用。引数は　Body、JSON中身のどのデータを使うか、FixtureDef、サイズ
+		loader.attachFixture(stoneBody, "gravestone", fd, 256);
 	}
 
 	// 更新
@@ -216,14 +243,14 @@ public class GameScreen implements Screen {
 			charaSpr.setScale(1, 1);
 			charaPos = charaBody.getPosition();
 			charaPos.x -= 5;
-			charaBody.setTransform(charaPos, 0);
+			charaBody.setTransform(charaPos, charaBody.getAngle());
 		}
 		if (Gdx.input.isKeyPressed(Keys.RIGHT)) {
 			charaSpr.setRegion(curFrame);
 			charaSpr.setScale(-1, 1);
 			charaPos = charaBody.getPosition();
 			charaPos.x += 5;
-			charaBody.setTransform(charaPos, 0);
+			charaBody.setTransform(charaPos, charaBody.getAngle());
 		}
 		if (Gdx.input.isKeyPressed(Keys.UP)) {
 			if (jump == 0) {
@@ -234,6 +261,7 @@ public class GameScreen implements Screen {
 		}
 		if (Gdx.input.isKeyPressed(Keys.DOWN)) {
 		}
+		//System.out.println((charaBody.getAngle()*180/Math.PI));
 
 		// 現在位置再習得
 		charaPos = charaBody.getPosition();
@@ -266,6 +294,14 @@ public class GameScreen implements Screen {
 			charaPos.y -= 5;
 			charaBody.setTransform(charaPos, 0);
 		}
+
+		// 矢印キーを押していない時はシミュレーションしない
+		if (!(Gdx.input.isKeyPressed(Keys.LEFT)) && !(Gdx.input.isKeyPressed(Keys.RIGHT))) {
+
+		} else {
+
+		}
+
 	}
 
 	// 描画関係
@@ -282,10 +318,14 @@ public class GameScreen implements Screen {
 		// スプライト描画？
 		// 奥に表示されるものから先に描画
 		// シミュレーション世界より後にやらないとポリゴンの線が見えてしまうので注意
+		// 背景描画
 		bgSpr.draw(batch);
+		// ステージ描画
 		stageSpr.draw(batch);
 		//batch.draw(curFrame, 50, 50);
+		// キャラクタ描画
 		charaSpr.draw(batch);
+		stoneSpr.draw(batch);
 		batch.end();
 
 		// シミュレーション世界を作成するよ？
@@ -302,8 +342,9 @@ public class GameScreen implements Screen {
 
 		// キャラクターの画像（スプライト）をcharaBodyの位置に描画する
 		charaSpr.setPosition(charaPos.x - 32, charaPos.y - 32);
+		charaSpr.setRotation((float) (charaBody.getAngle()*180/Math.PI));
 		// 回転しないように第二引数は0で固定
-		charaBody.setTransform(charaPos, 0);
+		//charaBody.setTransform(charaPos, 0);
 
 		// カメラ位置更新
 		// キャラクターの位置更新より後ろにしないと描画がおかしくなるので注意
@@ -322,7 +363,8 @@ public class GameScreen implements Screen {
 
 		// 遠景をカメラの位置に合わせて移動
 		bgSpr.setPosition
-			(cameraPos.x - 400 + (cameraPos.x * -0.15f), -512 + (cameraPos.y * -0.15f));
+			(cameraPos.x - 400 + (cameraPos.x * -0.05f), -512 + (cameraPos.y * -0.15f));
+
 
 	}
 

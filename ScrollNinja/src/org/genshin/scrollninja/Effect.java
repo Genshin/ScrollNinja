@@ -11,36 +11,31 @@ import com.badlogic.gdx.math.Vector2;
 public class Effect {
 
 	//変数宣言
-	private int 		texture;		// テクスチャー
-	private String 	name;			// 名前
+	private String		name;			// 名前
 	private int 		effectTime;	// 効果時間
 
 	//コンストラクタ
-	public Effect()
-	{
-		this.name       = "";
-		this.effectTime = 0;
+	public Effect(String Name) {
+		name		= new String(Name);
+		effectTime	= 0;
 	}
 		
 	
 
 	//アニメーション
-	public void EffectAnimation()
-	{
+	public void EffectAnimation() {
 		//-------------------------
 		// 画像切り替え
 		//-------------------------
 		
 	}
 	
-	public int GetEffectTime()
-	{
-		return this.effectTime;
+	public int GetEffectTime() {
+		return effectTime;
 	}
 	
 	// 
-	public void play()
-	{
+	public void play() {
 		
 	}
 	

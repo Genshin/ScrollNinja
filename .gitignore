@@ -1,2 +1,6 @@
-*.swp
-ScrollNinja-android/bin/jarlist.cache
+.DS_Store
+/ScrollNinja/bin/com/gdx.gwt.xml
+/ScrollNinja-html/.gwt/.gwt-log
+/ScrollNinja-android/bin/resources.ap_
+/ScrollNinja-android/bin/classes.dex
+/ScrollNinja-android/bin/ScrollNinja-android.apk

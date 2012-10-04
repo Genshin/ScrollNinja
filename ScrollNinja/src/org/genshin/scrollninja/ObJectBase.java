@@ -11,10 +11,12 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 // クラス宣言
 //========================================
 public class ObJectBase {
-	protected Sprite m_Sprite;			// スプライト
-	protected Body m_Body;				// 当たり判定用BOX
-	protected Fixture m_Sensor;			// センサー
+	protected Sprite 	sprite;			// スプライト
+	protected Body 		body;			// 当たり判定用BOX
+	protected Fixture 	sensor;			// センサー
 	
 	// コンストラクタ
-	ObJectBase(){}
+	ObJectBase(){
+		sprite = new Sprite();
+	}
 }

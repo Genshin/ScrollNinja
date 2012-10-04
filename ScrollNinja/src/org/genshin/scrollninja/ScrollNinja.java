@@ -8,6 +8,11 @@ public class ScrollNinja extends Game {
 		/**
 			事前に初期設定が必要ならここで
 		*/
+		
+		/*
+		 * 背景読み込み
+		 * */
+		
 		// メインメニュー読み込み
 		setScreen(new MainMenu(this));
 	}
