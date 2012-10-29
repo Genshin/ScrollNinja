@@ -5,48 +5,73 @@ package org.genshin.scrollninja;
 //========================================
 import java.util.ArrayList;
 
-//***** シングルトン *****/
+import org.genshin.scrollninja.object.Enemy;
+
+
+import com.badlogic.gdx.math.Vector2;
+
+//========================================
+// クラス宣言
+//========================================
+//***** モノステート *****/
 public class EnemyManager {
-	
-	private static final EnemyManager Instance = new EnemyManager();			// このクラスの唯一のインスタンスを作ります
-	
-	// インスタンスを返す
-	public static EnemyManager GetInstace() {
-		return Instance;
-	}
-	
 	// 変数宣言
-	private ArrayList<Enemy> enemyList;		// 敵リスト
-	
+	public static ArrayList<Enemy>		enemyList = new ArrayList<Enemy>();
+
 	// コンストラクタ
-	private EnemyManager() {
+	private EnemyManager() {}
+
+	/**
+	 * 更新
+	 */
+	public static void Update() {
+		for (int i = 0; i <enemyList.size(); i ++) {
+			// 存在しているなら更新
+			if (enemyList.get(i) != null)
+				enemyList.get(i).Update();
+		}
+	}
+
+	/**
+	 * スプライト描画
+	 */
+	public static void Draw() {
+		for (int i = 0; i < enemyList.size(); i ++) {
+			// 存在しているなら描画
+			if (enemyList.get(i) != null)
+				enemyList.get(i).Draw();
+		}
+	}
+
+	/**
+	 * 敵生成
+	 * @param id		エネミーID
+	 * @param position	出現位置
+	 */
+	public static void CreateEnemy(int id, Vector2 position) {
+		Enemy pEnemy = new Enemy(id, enemyList.size(), position);
+		enemyList.add(pEnemy);
+	}
+
+	/**
+	 * 削除
+	 * @param num		管理番号
+	 */
+	public static void DeleteEnemy(int num) {
+		enemyList.get(num).Release();
+		enemyList.set(num, null);
+	}
+
+	/**
+	 * 解放処理
+	 */
+	public static void dispose() {
+		if (enemyList != null) {
+			for (int i = 0; i < enemyList.size(); i++) {
+				if (enemyList.get(i) != null)
+					enemyList.get(i).Release();
+			}
+		}
 		enemyList = new ArrayList<Enemy>();
-	}
-	
-	// 敵の生成
-	public int CreateEnemy(String Name) {
-		if( enemyList.contains(Name) ) {		// 既にその名前が作られている場合はエラー
-			return -1;		// エラー処理
-		}
-		
-		Enemy pEnemy = new Enemy(Name);		// オブジェクトを生成（&初期化）して
-		enemyList.add(pEnemy);				// リストに追加
-		
-		return 1;
-	}
-	
-	// 敵の削除 
-	public int DeleteEnemy(String Name) {
-		if( !enemyList.contains(Name) ) {		// 名前が見つからなかった場合はエラー
-			return -1;		// エラー処理
-		}
-		
-		enemyList.remove(enemyList.indexOf(Name));		// 引数で渡されたオブジェクトを削除
-		return 1;
-	}
-	
-	// 参照
-	public Enemy GetEnemy(String Name) {
-		return enemyList.get(enemyList.indexOf(Name));				// 引数で渡されたオブジェクトのポインタを返す
 	}
 }

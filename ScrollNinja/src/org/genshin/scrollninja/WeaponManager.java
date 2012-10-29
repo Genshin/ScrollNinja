@@ -5,51 +5,57 @@ package org.genshin.scrollninja;
 //========================================
 import java.util.ArrayList;
 
+import org.genshin.scrollninja.object.CharacterBase;
+import org.genshin.scrollninja.object.WeaponBase;
+import org.genshin.scrollninja.object.weapon.Katana;
+
 //========================================
-//クラス宣言
+// クラス宣言
 //========================================
-//***** シングルトン *****/
+//***** モノステート *****/
 public class WeaponManager {
-	
-	private static final WeaponManager Instance = new WeaponManager();			// このクラスの唯一のインスタンスを作ります
-	
-	// インスタンスを返す
-	public static WeaponManager GetInstace() {
-		return Instance;
-	}
-	
+	// 定数宣言
+	public static final int KATANA		= 0;
+	public static final int SHURIKEN	= 1;
+
 	// 変数宣言
-	private ArrayList<Weapon> weaponList;
+	public static ArrayList<Katana> katanaList		= new ArrayList<Katana>();
+//	public static ArrayList<>
 
-	// コンストラクタ
-	private WeaponManager(){
-		weaponList = new ArrayList<Weapon>();
-	}
+	/**
+	 * コンストラクタ
+	 */
+	private WeaponManager(){}
 
-	// 武器の生成
-	public int CreateWeapon(String Name) {
-		if( weaponList.contains(Name) ) {		// 既にその名前が作られている場合はエラー
-			return -1;		// エラー処理
+	public static void Update() {
+		for( int i = 0; i < katanaList.size(); i ++ ) {
+			katanaList.get(i).Update();
 		}
-		
-		Weapon pWeapon = new Weapon(Name);			// オブジェクトを生成（&初期化）して
-		weaponList.add(pWeapon);					// リストに追加
-		
-		return 1;
 	}
 
-	// 武器の削除
-	public int DeleteWeapon(String Name) {
-		if( !weaponList.contains(Name) ) {		// 名前が見つからなかった場合はエラー
-			return -1;		// エラー処理
+	/**
+	 * 武器生成
+	 * @param owner			使用者
+	 * @param type			種類
+	 * @param lv			武器レベル
+	 */
+	public static WeaponBase CreateWeapon(CharacterBase owner, int type, int lv) {
+		switch(type) {
+		case KATANA:
+			Katana pKatana = new Katana(owner, katanaList.size() + 1, lv);
+			katanaList.add(pKatana);
+			return pKatana;
+		case SHURIKEN:
+			break;
 		}
-		
-		weaponList.remove(weaponList.indexOf(Name));		// 引数で渡されたオブジェクトを削除
-		return 1;
+
+		return null;
 	}
 
-	// 参照
-	public Weapon GetWeapon(String Name) {
-		return weaponList.get(weaponList.indexOf(Name));	// 引数で渡されたオブジェクトのポインタを返す
+	/**
+	 * 解放処理
+	 */
+	public static void dispose() {
+		katanaList = new ArrayList<Katana>();
 	}
 }

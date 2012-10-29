@@ -3,52 +3,45 @@ package org.genshin.scrollninja;
 //========================================
 //インポート
 //========================================
-import java.util.ArrayList;
+import org.genshin.scrollninja.object.StageBase;
 
+// TODO 今はステージクラスのやりとりしているけど、ステージナンバーだけでもよさげな気が
 //========================================
 // クラス宣言
 //========================================
-//***** シングルトン *****/
+//***** モノステート *****/
 public class StageManager {
-	
-	private static final StageManager Instance = new StageManager();			// このクラスの唯一のインスタンスを作ります
-	
-	// インスタンスを返す
-	public static StageManager GetInstace() {
-		return Instance;
-	}
-	
-	private ArrayList<Stage> stageList;				// ステージリスト
-	
+	private static StageBase	currentStage;		// 現在のステージ
+	private static StageBase	nextStage;			// 次のステージ
+
 	// コンストラクタ
-	private StageManager(){
-		stageList = new ArrayList<Stage>();
+	private StageManager(){}
+
+	//************************************************************
+	// Update
+	// 現在のステージの更新処理
+	//************************************************************
+	public static void Update() {
+		currentStage.Update();
 	}
-	
-	// ステージの生成
-	public int CreateStage(String Name) {
-		if( stageList.contains(Name) ) {		// 既にその名前が作られている場合はエラー
-			return -1;		// エラー処理
-		}
-		
-		Stage pStage = new Stage(Name);			// オブジェクトを生成（&初期化）して
-		stageList.add(pStage);					// リストに追加
-		
-		return 1;
+
+	//************************************************************
+	// Draw
+	// 現在のステージの描画処理
+	//************************************************************
+	public static void Draw() {
+		currentStage.Draw();
 	}
-	
-	// ステージの削除
-	public int DeleteStage(String Name) {
-		if( !stageList.contains(Name) ) {		// 名前が見つからなかった場合はエラー
-			return -1;		// エラー処理
-		}
-		
-		stageList.remove(stageList.indexOf(Name));		// 引数で渡されたオブジェクトを削除
-		return 1;
+
+	//************************************************************
+	// ChangeStage
+	// ステージ遷移
+	//************************************************************
+	public static void ChangeStage(StageBase stage) {
+		currentStage = stage;
 	}
-	
-	// 参照
-	public Stage GetStage(String Name) {
-		return stageList.get(stageList.indexOf(Name));				// 引数で渡されたオブジェクトのポインタを返す
+
+	public static StageBase GetNowStage() {
+		return currentStage;
 	}
 }

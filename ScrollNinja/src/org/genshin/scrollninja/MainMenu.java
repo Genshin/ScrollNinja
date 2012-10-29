@@ -1,150 +1,211 @@
 package org.genshin.scrollninja;
 
+import javax.swing.JOptionPane;
+
+import org.genshin.scrollninja.object.Background;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.GLCommon;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 
-public class MainMenu implements Screen {
+public class MainMenu implements Screen{
 	private Game scrollNinja;
 
 	private OrthographicCamera camera;
-	private SpriteBatch batch;
+	public static SpriteBatch spriteBatch;
 
-	private Texture texture;
-	private Sprite cursor;
-	private Sprite mode_GameRun;
-	private Sprite mode_Settings;
+	private Sprite modeContinue;			// コンティニュー
+	private Sprite modeNewGame;				// ニューゲーム
+	private Sprite modeLoadGame;			// ロードゲーム
+	private Sprite modeNetwork;				// ネットワーク
+	private Sprite modeOption;				// オプション
+	private Sprite modeExit;				// エグジット
 
-	private float rotation;
+	private int    nextStageNum;			// 次の画面で表示されるステージのナンバー
 
-	// カーソルの位置
-	private int position;
+	// 画像座標
+	private int spritePositionX;
+	private final float MOVE_SPEED = 0.5f;	// スクロール時の移動速度
+	private boolean scrollFlag;				// スクロールフラグ
+
+	private final static int FADE_MENU = -50;		// 画像移動の終わり座標
 
 	// コンストラクタ
 	public MainMenu(Game game) {
 		this.scrollNinja = game;
 
 		// カメラ作成
-		camera =
-			new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera = new OrthographicCamera(ScrollNinja.window.x * ScrollNinja.scale,
+										ScrollNinja.window.y * ScrollNinja.scale);
 		// スプライトバッチ作成
-		batch = new SpriteBatch();
+		spriteBatch = new SpriteBatch();
 
-		// カーソルの初期位置
-		// 0:GameRun 1:Settings
-		position = 0;
+		nextStageNum = 0;
+		// TODO 読み込んだセーブファイルからコンティニューする時のステージを設定
+		// stage =
+		// StageManager.StageTrance(stage);
+		// nextStageNum = StageManager.GetNowStage();
+		BackgroundManager.CreateBackground(nextStageNum, false);
 
 		// テクスチャ読み込み
-		try {
-			texture = new Texture(Gdx.files.internal("data/top01_test.png"));
-		} catch (NullPointerException e) {
-			System.out.println("ファイルがありません");
-		} catch (GdxRuntimeException e) {
-			System.out.println("テクスチャサイズは２の乗数にしてください");
-		}
+		Texture texture = new Texture(Gdx.files.internal("data/menu.png"));
 		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 
-		// カーソルセット
-		TextureRegion region = new TextureRegion(texture, 0, 200, 50, 50);
-		cursor = new Sprite(region);
-		cursor.setOrigin(cursor.getWidth() / 2, cursor.getHeight() / 2);
-		cursor.setPosition(-200, 0);
+		spritePositionX = -105;
+		// TODO 位置は後で要調整
+		// 選択肢コンテニュー
+		TextureRegion region = new TextureRegion(texture, 0, 0, 256, 35);
+		modeContinue = new Sprite(region);
+		modeContinue.setPosition(spritePositionX, 0);
+		modeContinue.setScale(ScrollNinja.scale);
 
-		// 選択肢１セット
-		region = new TextureRegion(texture, 0, 0, 256, 100);
-		mode_GameRun = new Sprite(region);
-		mode_GameRun.setPosition(-128, -25);
+		// 選択肢ニューゲーム
+		region = new TextureRegion(texture, 0, 40, 256, 35);
+		modeNewGame = new Sprite(region);
+		modeNewGame.setPosition(spritePositionX, -4);
+		modeNewGame.setScale(ScrollNinja.scale);
 
-		// 選択肢２セット
-		region = new TextureRegion(texture, 0, 100, 256, 100);
-		mode_Settings = new Sprite(region);
-		mode_Settings.setPosition(-128, -150);
+		// 選択肢ロードゲーム
+		region = new TextureRegion(texture, 0, 85, 256, 35);
+		modeLoadGame = new Sprite(region);
+		modeLoadGame.setPosition(spritePositionX, -8);
+		modeLoadGame.setScale(ScrollNinja.scale);
 
-		// おまけの回転
-		rotation = 0;
+		// 選択肢ネットワーク
+		region = new TextureRegion(texture, 0, 128, 256, 35);
+		modeNetwork = new Sprite(region);
+		modeNetwork.setPosition(spritePositionX, -12);
+		modeNetwork.setScale(ScrollNinja.scale);
+
+		// 選択肢オプション
+		region = new TextureRegion(texture, 0, 176, 256, 35);
+		modeOption = new Sprite(region);
+		modeOption.setPosition(spritePositionX, -16);
+		modeOption.setScale(ScrollNinja.scale);
+
+		// 選択肢終了
+		region = new TextureRegion(texture, 0, 218, 256, 35);
+		modeExit = new Sprite(region);
+		modeExit.setPosition(spritePositionX, -20);
+		modeExit.setScale(ScrollNinja.scale);
+
+		// 初期化
+		scrollFlag = false;
 	}
 
 	// 更新
 	public void update(float delta) {
-		// キー入力
-		if (Gdx.input.isKeyPressed(Keys.UP)) {
-			if (position == 1) {
-				cursor.setPosition(-200, 0);
-				position = 0;
-			}
-		}
-		if (Gdx.input.isKeyPressed(Keys.DOWN)) {
-			if (position == 0) {
-				cursor.setPosition(-200, -125);
-				position = 1;
-			}
+
+		if (Gdx.input.isKeyPressed(Keys.A)) {
+			FileOperation.LoadFile("data/test.txt");
+			FileOperation.ExportFile("data/aaa.txt");
 		}
 
-		if (Gdx.input.isKeyPressed(Keys.ENTER)) {
-			if (position == 0) {
-				scrollNinja.setScreen(new GameScreen(scrollNinja));
-				return;
+		// エンターキーでコンティニュー　仮挿入中
+		if (Gdx.input.isKeyPressed(Keys.ENTER))
+				scrollFlag = true;		// スプライトを動かすフラグオン
+
+		// クリックされたらゲームステート移行
+		if (Gdx.input.isTouched()) {
+			// クリック座標によってどにメニューが選択されたか判断
+			int x = Gdx.input.getX();
+			int y = Gdx.input.getY();
+
+			// コンティニュー
+			if (x > 530 && x < 770 && y > 105 && y < 140) {
+				scrollFlag = true;
 			}
-			if (position == 1) {
-				scrollNinja.setScreen(new SettingsScreen(scrollNinja));
-				return;
+			// ニューゲーム
+			if (x > 530 && x < 770 && y > 140 && y < 175) {
+
+			}
+			// ロードゲーム
+			if (x > 530 && x < 770 && y > 175 && y < 210) {
+
+			}
+			// ネットワーク
+			if (x > 530 && x < 770 && y > 210 && y < 245) {
+			}
+			// オプション
+			if (x > 530 && x < 770 && y > 245 && y < 280) {
+
+			}
+			// 終了
+			if ( x > 530 && x < 770 && y > 315 && y < 350 ) {
+				int message =
+					JOptionPane.showConfirmDialog(null, "終了しますか？", "Exit", JOptionPane.YES_NO_OPTION);
+				if(message == JOptionPane.OK_OPTION) {
+					System.exit(0);
+				}
 			}
 		}
-		/*
-		Status.running(true);
-		Status.setGameMode(Status.RunModes.MAIN_MENU.ordinal());
-		while (Status.running()) {
-			int mode = Status.getGameMode();
 
-			if (mode == Status.RunModes.MAIN_MENU.ordinal()) {
-				//MainMenu.show();
-			} else if (mode == Status.RunModes.SETTINGS.ordinal()) {
+		// 選択肢をクリックしたら画像移動
+		moveSprite();
+	}
 
-			} else if (mode == Status.RunModes.GAME_INIT.ordinal()) {
+	//---------------------------------------------------
+	// 画像移動
+	// 画面端にいったらステート移行
+	//---------------------------------------------------
+	public void moveSprite() {
+		// クリックされたらメニューの文字が移動
+		if (scrollFlag) {
+			// 加速して画面外へ
+			spritePositionX += MOVE_SPEED;
 
-			} else if (mode == Status.RunModes.GAME_RUN.ordinal()) {
-
-			} else if (mode == Status.RunModes.SHUTDOWN.ordinal()) {
-
-				return;
-			}
+			// スプライト移動
+			modeContinue.setPosition(spritePositionX, 0);
+			modeNewGame.setPosition(spritePositionX, -4);
+			modeLoadGame.setPosition(spritePositionX, -8);
+			modeNetwork.setPosition(spritePositionX, -12);
+			modeOption.setPosition(spritePositionX, -16);
+			modeExit.setPosition(spritePositionX, -20);
 		}
-		*/
+
+		// メニューの文字が画面外まで移動したらゲームメイン移行
+		if(spritePositionX >= FADE_MENU ) {
+			scrollNinja.setScreen(new GameMain(scrollNinja, nextStageNum));
+		}
 	}
 
 	// 描画関係
 	public void draw(float delta) {
 		// クリア
+		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
 		// スプライト描画
-		batch.setProjectionMatrix(camera.combined);
-		batch.begin();
-		ScrollNinja.bgSpr.draw(batch);
-		cursor.draw(batch);
-		mode_GameRun.draw(batch);
-		mode_Settings.draw(batch);
-		batch.end();
+		spriteBatch.setProjectionMatrix(camera.combined);
+		spriteBatch.begin();
 
-		// おまけの回転
-		rotation += 1;
-		cursor.setRotation(rotation);
+		// 背景描画
+		BackgroundManager.backgroundList.Draw(Background.FAR, true);
+		BackgroundManager.backgroundList.Draw(Background.MAIN, true);
+
+		// メニュー選択肢描画
+		modeContinue.draw(spriteBatch);
+		modeNewGame.draw(spriteBatch);
+		modeLoadGame.draw(spriteBatch);
+		modeNetwork.draw(spriteBatch);
+		modeOption.draw(spriteBatch);
+		modeExit.draw(spriteBatch);
+
+		spriteBatch.end();
 	}
 
 	@Override
 	public void render(float delta) {
 		update(delta);
-		draw(delta);		
+		draw(delta);
 	}
 
 	@Override
@@ -169,7 +230,6 @@ public class MainMenu implements Screen {
 
 	@Override
 	public void dispose() {
-		batch.dispose();
-		texture.dispose();
+		spriteBatch.dispose();
 	}
 }
