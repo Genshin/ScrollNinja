@@ -59,12 +59,12 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
  */
 public class Player extends CharacterBase {
 	// 定数宣言
-	private static final float RUN_MAX_VEL		= 20.0f;	// 走りの最高速度
-	private static final float DASH_MAX_VEL	= 40.0f;	// ダッシュの最高速度
-	private static final float RUN_ACCEL		= 5.0f;	// 走りの加速度
-	private static final float DASH_ACCEL		= 10.0f;	// ダッシュの加速度
-	private static final float JUMP_POWER		= 70.0f;	// ジャンプ加速度
-	private static final int JUMP_MAX			= 2;		// 連続でジャンプできる回数
+	private static final float RUN_VEL_MAX				= 20.0f;	// 走りの最高速度
+	private static final float DASH_VEL_MAX			= 40.0f;	// ダッシュの最高速度
+	private static final float RUN_ACCEL				= 5.0f;	// 走りの加速度
+	private static final float DASH_ACCEL				= 10.0f;	// ダッシュの加速度
+	private static final float JUMP_POWER				= 70.0f;	// ジャンプ加速度
+	private static final int AERIAL_JUMP_COUNT_MAX		= 1;		// 空中でジャンプできる回数
 
 	private static final int FOOT	= 0;
 	private static final int BODY	= 1;
@@ -78,32 +78,35 @@ public class Player extends CharacterBase {
 	private static final int ATTACK			=  4;
 
 	// 変数宣言
-	private int					number;					// プレイヤー番号
-	private int					charge;					// チャージゲージ
+	private int					number;				// プレイヤー番号
+	private int					charge;				// チャージゲージ
 	private int					currentState;			// 現在の状態
 	private int					maxChakra;				// チャクラ最大値
 	private int					chakra;				// チャクラ
 	private int					count;					// カウント用変数
 	private int					invincibleTime;		// 無敵時間
 	private float				stateTime;
-	private boolean				jump;					// ジャンプフラグ
+	private int					restAerialJumpCount;	// 空中でジャンプできる残り回数
 	private boolean				groundJudge;			// 地面と当たってますよフラグ
 	private WeaponBase			weapon;
-	private Kaginawa			kaginawa;		// 鉤縄
-	private IPlayerController	controller;		// プレイヤーの操作状態インタフェース
+	private Kaginawa				kaginawa;				// 鉤縄
+	private IPlayerController	controller;			// プレイヤーの操作状態インタフェース
 
 	private Animation		standAnimation;			// 立ちアニメーション
 	private Animation		walkAnimation;			// 歩きアニメーション
 	private Animation		dashAnimation;			// ダッシュアニメーション
 	private Animation		jumpAnimation;			// ジャンプアニメーション
-	private Animation		attackAnimation;		// 攻撃アニメーション
+	private Animation		attackAnimation;			// 攻撃アニメーション
 	private Animation		footWalkAnimation;		// 下半身・歩きアニメーション
-	private TextureRegion[]	frame;					// アニメーションのコマ
-	private TextureRegion	nowFrame;				// 現在のコマ
-	private TextureRegion	nowFootFrame;			// 下半身用の現在のコマ
+	private TextureRegion[]	frame;						// アニメーションのコマ
+	private TextureRegion	nowFrame;					// 現在のコマ
+	private TextureRegion	nowFootFrame;				// 下半身用の現在のコマ
 
 	// おそらく別のクラスに吐き出す変数
 	private int				money;					// お金
+	
+	// おそらく使わなくなる変数
+	private boolean				jump;					// ジャンプフラグ
 
 	//************************************************************
 	// Get
@@ -218,6 +221,7 @@ public class Player extends CharacterBase {
 		weapon = WeaponManager.CreateWeapon(this, WeaponManager.KATANA, 2);	// TODO 今だけレベル２
 		kaginawa = new Kaginawa(body);
 		controller = new DefaultPlayerController();
+		restAerialJumpCount = AERIAL_JUMP_COUNT_MAX;
 	}
 
 
@@ -283,13 +287,14 @@ public class Player extends CharacterBase {
 		}
 		else
 		{
+			if(controller.aerialJump() && restAerialJumpCount > 0)
+			{
+				restAerialJumpCount--;
+				currentState = JUMP;
+				body.setLinearVelocity(body.getLinearVelocity().x, 0.0f);
+				body.applyLinearImpulse(0.0f, JUMP_POWER, position.x, position.y);
+			}
 			nearRotate(0);
-		}
-
-		// ジャンプ中の処理
-		if( jump ) {
-//			body.setLinearVelocity(velocity.x, velocity.y);
-//			velocity.y -= 1;
 		}
 	}
 
@@ -300,9 +305,9 @@ public class Player extends CharacterBase {
 	private void Move()
 	{
 		if(controller.dash())
-			move(DASH_ACCEL, DASH_MAX_VEL, DASH);
+			move(DASH_ACCEL, DASH_VEL_MAX, DASH);
 		else
-			move(RUN_ACCEL, RUN_MAX_VEL, RUN);
+			move(RUN_ACCEL, RUN_VEL_MAX, RUN);
 	}
 
 	private void move(float accel, float maxVel, int state)
@@ -370,7 +375,7 @@ public class Player extends CharacterBase {
 	{
 		if( controller.kaginawaThrow() )
 		{
-			kaginawa.attack();
+			kaginawa.doThrow();
 		}
 		kaginawa.Update();
 	}
@@ -451,6 +456,7 @@ public class Player extends CharacterBase {
 
 		// 足が地面に着いたらジャンプできるよ！
 		jump = false;
+		restAerialJumpCount = AERIAL_JUMP_COUNT_MAX;
 
 		if( currentState != ATTACK ) {
 			//currentState = STAND;

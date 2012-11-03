@@ -23,8 +23,6 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.physics.box2d.joints.RopeJoint;
-import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
 
 /**
  * 鉤縄クラス
@@ -34,21 +32,6 @@ import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
  */
 public class Kaginawa extends WeaponBase
 {
-	/** 鉤縄の状態 */
-	private enum STATE
-	{
-		/** 待機状態 */
-		IDLE,
-		/** 投げられて飛んでいる状態 */
-		THROW,
-		/** 縮んでいる状態 */
-		SHRINK,
-		/** ぶら下がっている状態 */
-		HANG,
-		/** 離した状態 */
-		RELEASE,
-	}
-
 	/** 衝突関連の定数 */
 	private static final class COLLISION
 	{
@@ -75,20 +58,14 @@ public class Kaginawa extends WeaponBase
 	/** 鉤縄の持ち主 */
 	private Body owner;
 
-	/** 鉤縄と持ち主を繋ぐロープ */
-	private RopeJoint ropeJoint;
-
 	/** 鉤縄の状態 */
-	private STATE state;
-
-	/** 鉤縄の飛ぶ方向 */
+	private State state;
+	
+	/** 縄の長さを制限するためのジョイント */
+	private Joint ropeJoint;
+	
+	/** 鉤縄の向き */
 	private Vector2 dir;
-
-	/** 鉤縄の長さ */
-	private float len;
-
-	/** 更新メソッド */
-	private final IUpdateMethod updateMethods[];
 
 	/**
 	 * コンストラクタ
@@ -104,15 +81,6 @@ public class Kaginawa extends WeaponBase
 		bd.bullet = true;					// すり抜けない
 		bd.gravityScale = 0.0f;				// 重力の影響を受けない
 		body = world.createBody(bd);
-
-		// ロープジョイント生成
-		RopeJointDef rjd = new RopeJointDef();
-		rjd.bodyA = owner;
-		rjd.bodyB = body;
-		rjd.maxLength = LEN_MAX;
-		Joint joint = world.createJoint(rjd);
-		assert joint instanceof RopeJoint : "ジョイントの生成に失敗してるよ。";
-		ropeJoint = (RopeJoint)joint;
 
 		// 衝突オブジェクト生成
 		CircleShape cs = new CircleShape();
@@ -142,89 +110,46 @@ public class Kaginawa extends WeaponBase
 		// フィールド初期化
 		this.owner = owner;
 		dir = new Vector2();
-		state = STATE.IDLE;
-
-		// 更新メソッド初期化
-		updateMethods = new IUpdateMethod[STATE.values().length];
-		IUpdateMethod updateEmpty = new UpdateEmpty();
-		updateMethods[STATE.IDLE.ordinal()] = updateEmpty;
-		updateMethods[STATE.THROW.ordinal()] = new UpdateThrow();
-		updateMethods[STATE.SHRINK.ordinal()] = new UpdateShrink();
-		updateMethods[STATE.HANG.ordinal()] = new UpdateHang();
-		updateMethods[STATE.RELEASE.ordinal()] = new UpdateRelease();
+		
+		changeState(State.IDLE);
 	}
 
 	/**
 	 * 鉤縄を投げる。
 	 */
-	public void attack()
+	public final void doThrow()
 	{
-		// 待機状態でなければ無視する
-		if(state != STATE.IDLE)
-			return;
-
-		// 初期座標、アクティブフラグを設定
-		body.setTransform(owner.getPosition(), 0);
-		body.setActive(true);
-
-		// FIXME 鉤縄の向き設定（仮）
-		Vector2 mousePos = new Vector2(
-			Gdx.input.getX() - Gdx.graphics.getWidth()*0.5f,
-			Gdx.graphics.getHeight()*0.5f - Gdx.input.getY()
-		);
-		Vector2 ownerPos = owner.getPosition();
-
-		mousePos.mul(ScrollNinja.scale);
-		mousePos.x += GameMain.camera.position.x;
-		mousePos.y += GameMain.camera.position.y;
-
-		dir.x = mousePos.x - ownerPos.x;
-		dir.y = mousePos.y - ownerPos.y;
-		dir.nor();
-
-		// 速度を設定
-		body.setLinearVelocity(dir.x*THROW_VEL, dir.y*THROW_VEL);
-
-		// 状態遷移
-		state = STATE.THROW;
-
-		// 長さ初期化
-		len = 0.0f;
+		state.doThrow(this);
+	}
+	
+	/**
+	 * 鉤縄を縮める。
+	 */
+	public final void doShrink()
+	{
+		state.doShrink(this);
 	}
 
 	/**
 	 * 鉤縄にぶら下がる。
 	 */
-	public final void hang()
+	public final void doHang()
 	{
-
+		state.doHang(this);
 	}
 
 	/**
 	 * 鉤縄を離す。
 	 */
-	public final void release()
+	public final void doRelease()
 	{
-		// TODO 鉤縄を離した時のエフェクト的なものを発生させる。
-		// 状態遷移
-		state = STATE.RELEASE;
+		state.doRelease(this);
 	}
 
 	@Override
 	public void Update()
 	{
-		IUpdateMethod updateMethod = updateMethods[state.ordinal()];
-
-		assert updateMethod!=null : "鉤縄は正しく初期化されていません。(state=" + state.toString() + ")";
-
-		updateMethods[state.ordinal()].invoke(this);
-	}
-
-	@Override
-	public void Draw()
-	{
-		if(body.isActive())
-			super.Draw();
+		state.update(this);
 	}
 
 	@Override
@@ -238,96 +163,340 @@ public class Kaginawa extends WeaponBase
 	protected void collisionNotify(Background obj, Contact contact)
 	{
 		// TODO 鉤縄の衝突処理とか。
-		body.setLinearVelocity(0.0f, 0.0f);
-		state = STATE.SHRINK;
+		doShrink();
 	}
-
-
-
+	
 	/**
-	 * 更新メソッドのインタフェース
+	 * 状態を変更する。
+	 * @param next	次の状態
 	 */
-	private interface IUpdateMethod
+	private void changeState(State next)
 	{
-		/**
-		 * 更新メソッドを実行する。
-		 * @param kaginawa	更新する鉤縄オブジェクト
+		assert next!=null;
+		
+		state = next;
+		state.initialize(this);
+	}
+	
+	
+	/** 
+	 * 鉤縄の状態による振る舞い
+	 */
+	private enum State
+	{
+		/** 
+		 * 待機状態
 		 */
-		public void invoke(Kaginawa kaginawa);
-	}
-
-	/**
-	 * 何もしない更新メソッド
-	 */
-	private class UpdateEmpty implements IUpdateMethod
-	{
-		@Override
-		public void invoke(Kaginawa kaginawa)
+		IDLE
 		{
-			// 何もしない
-		}
-	}
-
-	/**
-	 * 鉤縄が飛んでいる状態の更新メソッド
-	 */
-	private class UpdateThrow implements IUpdateMethod
-	{
-		@Override
-		public void invoke(Kaginawa kaginawa)
-		{
-//			if((kaginawa.len+=THROW_VEL/60) > LEN_MAX)
-//			kaginawa.release();
-		}
-	}
-
-	/**
-	 * 鉤縄が縮んでいる状態の更新メソッド
-	 */
-	private class UpdateShrink implements IUpdateMethod
-	{
-		@Override
-		public void invoke(Kaginawa kaginawa)
-		{
-			Body owner = kaginawa.owner;
-			Vector2 kaginawaPos = kaginawa.body.getPosition();
-			Vector2 ownerPos = owner.getPosition();
-			Vector2 direction = kaginawaPos.sub(ownerPos);
-			float len2 = direction.len2();
-			direction.nor().mul(SHRINK_VEL);
-
-			owner.applyLinearImpulse(direction, ownerPos);
-
-			if(len2 < (SHRINK_VEL*SHRINK_VEL)/30/30)
+			@Override
+			void initialize(Kaginawa me)
 			{
-				kaginawa.state = STATE.IDLE;
-				kaginawa.body.setActive(false);
+				Body kaginawa	= me.body;
+				Body owner		= me.owner;
+				
+				kaginawa.setActive(false);
+				owner.setGravityScale(1.0f);
 			}
-		}
-	}
 
-	/**
-	 * 鉤縄にぶら下がっている状態の更新メソッド
-	 */
-	private class UpdateHang implements IUpdateMethod
-	{
-		@Override
-		public void invoke(Kaginawa kaginawa)
-		{
-			kaginawa.state = STATE.IDLE;
-		}
-	}
+			@Override
+			void doThrow(Kaginawa me)
+			{
+				Body kaginawa	= me.body;
+				Body owner		= me.owner;
+				Vector2 dir	= me.dir;
+				
+				// FIXME 鉤縄の向き設定（仮）
+				Vector2 mousePos = new Vector2(
+					Gdx.input.getX() - Gdx.graphics.getWidth()*0.5f,
+					Gdx.graphics.getHeight()*0.5f - Gdx.input.getY()
+				);
+				Vector2 ownerPos = owner.getPosition();
 
-	/**
-	 * 鉤縄を離した状態の更新メソッド
-	 */
-	private class UpdateRelease implements IUpdateMethod
-	{
-		@Override
-		public void invoke(Kaginawa kaginawa)
+				mousePos.mul(ScrollNinja.scale);
+				mousePos.x += GameMain.camera.position.x;
+				mousePos.y += GameMain.camera.position.y;
+
+				dir.x = mousePos.x - ownerPos.x;
+				dir.y = mousePos.y - ownerPos.y;
+				dir.nor();
+				
+				me.changeState(THROW);
+			}
+		},
+		
+		/**
+		 * 鉤縄を投げている状態
+		 */
+		THROW
 		{
-			kaginawa.state = STATE.IDLE;
-			kaginawa.body.setActive(false);
-		}
+			@Override
+			void initialize(Kaginawa me)
+			{
+				Body kaginawa	= me.body;
+				Body owner		= me.owner;
+				Vector2 dir	= me.dir;
+				
+				kaginawa.setTransform(owner.getPosition(), 0);
+				kaginawa.setActive(true);
+				kaginawa.setLinearVelocity(dir.x*THROW_VEL, dir.y*THROW_VEL);
+				owner.setGravityScale(1.0f);
+			}
+
+			@Override
+			void update(Kaginawa me)
+			{
+				Body kaginawa	= me.body;
+				Body owner		= me.owner;
+				
+				// 縄の長さが限界に達したらぶら下がりん。
+				Vector2 kaginawaPos = kaginawa.getPosition();
+				Vector2 ownerPos = owner.getPosition();
+				Vector2 direction = new Vector2(kaginawaPos.x-ownerPos.x, kaginawaPos.y-ownerPos.y);
+				
+				if(direction.len2() > LEN_MAX*LEN_MAX)
+				{
+					doRelease(me);
+				}
+			}
+
+			@Override
+			void doShrink(Kaginawa me)
+			{
+				me.changeState(SHRINK);
+			}
+
+			@Override
+			void doHang(Kaginawa me)
+			{
+				me.changeState(HANG);
+			}
+
+			@Override
+			void doRelease(Kaginawa me)
+			{
+				me.changeState(RELEASE);
+			}
+		},
+		
+		/**
+		 * 鉤縄を縮めている状態
+		 */
+		SHRINK
+		{
+			@Override
+			void initialize(Kaginawa me)
+			{
+				Body kaginawa	= me.body;
+				Body owner		= me.owner;
+				
+				kaginawa.setLinearVelocity(Vector2.Zero);
+				owner.setGravityScale(0.0f);
+				owner.setLinearVelocity(Vector2.Zero);
+			}
+
+			@Override
+			void update(Kaginawa me)
+			{
+				Body kaginawa	= me.body;
+				Body owner		= me.owner;
+				Vector2 kaginawaPos = kaginawa.getPosition();
+				Vector2 ownerPos = owner.getPosition();
+				Vector2 direction = new Vector2(kaginawaPos.x-ownerPos.x, kaginawaPos.y-ownerPos.y);
+				float len2 = direction.len2();
+				direction.nor().mul(SHRINK_VEL);
+	
+				owner.applyLinearImpulse(direction, ownerPos);
+	
+				if(len2 < (SHRINK_VEL*SHRINK_VEL)/30/30)
+				{
+					doRelease(me);
+				}
+			}
+
+			@Override
+			void doHang(Kaginawa me)
+			{
+				me.changeState(HANG);
+			}
+
+			@Override
+			void doRelease(Kaginawa me)
+			{
+				me.changeState(RELEASE);
+			}
+		},
+		
+		/** 
+		 * 鉤縄にぶら下がっている状態
+		 */
+		HANG
+		{
+			@Override
+			void initialize(Kaginawa me)
+			{
+				Body kaginawa	= me.body;
+				Body owner		= me.owner;
+
+				owner.setGravityScale(1.0f);
+			}
+
+			@Override
+			void update(Kaginawa me)
+			{
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			void doShrink(Kaginawa me)
+			{
+				me.changeState(SHRINK);
+			}
+
+			@Override
+			void doRelease(Kaginawa me)
+			{
+				me.changeState(RELEASE);
+			}
+		},
+		
+		/** 
+		 * 鉤縄を離した状態
+		 */
+		RELEASE
+		{
+			@Override
+			void initialize(Kaginawa me)
+			{
+				Body kaginawa	= me.body;
+				Body owner		= me.owner;
+				
+				// TODO 鉤縄を離した時のエフェクト的なものを発生させる。
+				kaginawa.setActive(false);
+				owner.setGravityScale(1.0f);
+			}
+
+			@Override
+			void update(Kaginawa me)
+			{
+				// TODO エフェクトが消えるのを待つ処理とか？
+				me.changeState(IDLE);
+			}
+		},
+		;
+		
+		/**
+		 * 状態を初期化する。
+		 * @param me	自身を指す鉤縄オブジェクト
+		 */
+		abstract void initialize(Kaginawa me);
+		
+		/**
+		 * 状態を更新する。
+		 * @param me	自身を指す鉤縄オブジェクト
+		 */
+		void update(Kaginawa me) { /* 何もしない */ }
+
+		/**
+		 * 鉤縄を投げる。
+		 * @param me	自身を指す鉤縄オブジェクト
+		 */
+		void doThrow(Kaginawa me) { /* 何もしない */ }
+
+		/**
+		 * 鉤縄を縮める。
+		 * @param me	自身を指す鉤縄オブジェクト
+		 */
+		void doShrink(Kaginawa me) { /* 何もしない */ }
+
+		/**
+		 * 鉤縄にぶら下がる。
+		 * @param me	自身を指す鉤縄オブジェクト
+		 */
+		void doHang(Kaginawa me) { /* 何もしない */ }
+
+		/**
+		 * 鉤縄を離す。
+		 * @param me	自身を示す鉤縄オブジェクト
+		 */
+		void doRelease(Kaginawa me) { /* 何もしない */ }
 	}
 }
+
+
+
+
+///** 更新メソッド */
+//private enum UpdateMethod
+//{
+//	/** 何もしない更新メソッド */
+//	EMPTY
+//	{
+//		@Override
+//		void invoke(Kaginawa kaginawa)
+//		{
+//			/* 何もしない */
+//		}
+//	},
+//	/** 鉤縄が飛んでいる状態の更新メソッド */
+//	THROW
+//	{
+//		@Override
+//		void invoke(Kaginawa kaginawa)
+//		{
+//			// 縄の長さが限界に達したらぶら下がりん。
+//			Vector2 kaginawaPos = kaginawa.body.getPosition();
+//			Vector2 ownerPos = kaginawa.owner.getPosition();
+//			Vector2 direction = new Vector2(kaginawaPos.x-ownerPos.x, kaginawaPos.y-ownerPos.y);
+//			
+//			if(direction.len2() > LEN_MAX*LEN_MAX)
+//			{
+//				kaginawa.hang();
+//			}
+//		}
+//	},
+//	/** 鉤縄が縮んでいる状態の更新メソッド */
+//	SHRINK
+//	{
+//		@Override
+//		void invoke(Kaginawa kaginawa)
+//		{
+//			Vector2 kaginawaPos = kaginawa.body.getPosition();
+//			Vector2 ownerPos = kaginawa.owner.getPosition();
+//			Vector2 direction = new Vector2(kaginawaPos.x-ownerPos.x, kaginawaPos.y-ownerPos.y);
+//			float len2 = direction.len2();
+//			direction.nor().mul(SHRINK_VEL);
+//
+//			kaginawa.owner.applyLinearImpulse(direction, ownerPos);
+//
+//			if(len2 < (SHRINK_VEL*SHRINK_VEL)/30/30)
+//			{
+//				kaginawa.release();
+//			}
+//		}
+//	},
+//	/** 鉤縄にぶら下がっている状態の更新メソッド */
+//	HANG
+//	{
+//		@Override
+//		void invoke(Kaginawa kaginawa)
+//		{
+////			kaginawa.release();
+//		}
+//	},
+//	/** 鉤縄を離した状態の更新メソッド */
+//	RELEASE
+//	{
+//		@Override
+//		void invoke(Kaginawa kaginawa)
+//		{
+//			kaginawa.idle();
+//		}
+//	},
+//	;
+//	/**
+//	 * 更新メソッドを実行する。
+//	 * @param kaginawa	更新する鉤縄オブジェクト
+//	 */
+//	abstract void invoke(Kaginawa kaginawa);
+//}

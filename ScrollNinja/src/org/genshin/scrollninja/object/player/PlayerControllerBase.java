@@ -36,7 +36,7 @@ public abstract class PlayerControllerBase implements IPlayerController
 	}
 
 	@Override
-	public void update()
+	public final void update()
 	{
 		for(int i = 0;  i < inputHelpers.length;  ++i)
 		{
@@ -46,46 +46,58 @@ public abstract class PlayerControllerBase implements IPlayerController
 	}
 
 	@Override
-	public float moveLevel()
+	public final float moveLevel()
 	{
 		float result = 0.0f;
 		if(inputHelpers[ACTION.LEFT.ordinal()].prs())		result -= 1.0f;
-		if(inputHelpers[ACTION.RIGHT.ordinal()].prs())		result += 1.0f;
+		if(inputHelpers[ACTION.RIGHT.ordinal()].prs())	result += 1.0f;
 		return result;
 	}
 
 	@Override
-	public boolean dash()
+	public final boolean dash()
 	{
 		return inputHelpers[ACTION.DASH.ordinal()].prs();
 	}
 
 	@Override
-	public boolean jump()
+	public final boolean jump()
 	{
 		return inputHelpers[ACTION.JUMP.ordinal()].prs();
 	}
 
 	@Override
-	public boolean attack()
+	public final boolean aerialJump()
+	{
+		return inputHelpers[ACTION.JUMP.ordinal()].trg();
+	}
+
+	@Override
+	public final boolean attack()
 	{
 		return inputHelpers[ACTION.ATTACK.ordinal()].prs();
 	}
 
 	@Override
-	public boolean kaginawaThrow()
+	public final boolean kaginawaThrow()
 	{
 		return inputHelpers[ACTION.KAGINAWA.ordinal()].trg();
 	}
 	
 	@Override
-	public boolean kaginawaHang()
+	public final boolean kaginawaShrink()
+	{
+		return !inputHelpers[ACTION.KAGINAWA.ordinal()].prs();
+	}
+
+	@Override
+	public final boolean kaginawaHang()
 	{
 		return inputHelpers[ACTION.KAGINAWA.ordinal()].prs();
 	}
 
 	@Override
-	public boolean kaginawaRelease()
+	public final boolean kaginawaRelease()
 	{
 		// TODO 鉤縄を離す時の入力処理
 		return false;

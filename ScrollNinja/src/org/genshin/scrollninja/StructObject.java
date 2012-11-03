@@ -18,19 +18,19 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
 public class StructObject {
-	
+
 	// プレイヤー
 	public static final int			PLAYER			= 0;
-	
+
 	// アイテム
 	public static final int			ONIGIRI_ITEM	= 10;
 	public static final int			OKANE_ITEM		= 11;
-	
+
 	// 敵
 	public static final int			NORMAL_ENEMY	= 100;
 	public static final int			RARE_ENEMY		= 101;
 	public static final int			AUTO_ENEMY		= 102;
-	
+
 	// ステージオブジェクト
 	public static final int			ROCK_OBJECT		= 1;
 	public static final int			ROCK2_OBJECT	= 1001;
@@ -47,7 +47,7 @@ public class StructObject {
 	public float	positionX;		// 保存用座標Ｘ
 	public float	positionY;		// 保存用座標Ｙ
 	public Integer	priority;		// 優先度（数値が低い方が奥）
-	
+
 	/**
 	 * エディタで使うもの
 	 */
@@ -56,7 +56,7 @@ public class StructObject {
 	public Vector2 size;
 	public ArrayList<Sprite> sprite;
 	public Body body;
-	
+
 	/**
 	 * コンストラクタ
 	 */
@@ -64,16 +64,16 @@ public class StructObject {
 		sprite = new ArrayList<Sprite>();
 		position = new Vector2(0.0f, 0.0f);
 		size = new Vector2(0.0f, 0.0f);
-		type = Type;
+		type = 1;		// とりあえず
 		positionX = 0.0f;
 		positionY = 0.0f;
 		priority = 0;
 		hold = false;
-		
+
 		// スプライト読み込み
 		Create();
 	}
-	
+
 	/**
 	 * コンストラクタ
 	 */
@@ -86,11 +86,11 @@ public class StructObject {
 		positionY = y;
 		priority = p;
 		hold = false;
-		
+
 		// スプライト読み込み
 		Create();
 	}
-	
+
 	/**
 	 * ホールド情報取得
 	 */
@@ -99,18 +99,18 @@ public class StructObject {
 	 * 優先度取得　
 	 */
 	public Integer GetPriority(){ return priority; }
-	
+
 	/**
 	 * 更新
 	 */
 	public void Update(int p) {
 		position = body.getPosition();					// 現在位置の更新
-		
+
 		Hold(p);		// ホールド判定
 		Priority();		// 優先度の設定
 		Move();			// 動く
 	}
-	
+
 	/**
 	 * 描画
 	 */
@@ -130,16 +130,16 @@ public class StructObject {
 			current.draw(sb);
 		}
 	}
-	
+
 	/**
 	 * 解放処理
 	 */
-	public void Release() {		
+	public void Release() {
 		GameMain.world.destroyBody(body);
 		body = null;
 		sprite.clear();
 	}
-	
+
 	/**
 	 * 動かす
 	 */
@@ -155,7 +155,7 @@ public class StructObject {
 			}
 		}
 	}
-	
+
 	/**
 	 * ホールド設定
 	 */
@@ -165,7 +165,7 @@ public class StructObject {
 			if( p >= priority ) {
 				if( position.x - size.x < (Mouse.GetPosition().x * 0.1 - 64.0 ) + (GameMain.camera.position.x) && position.x + size.x > (Mouse.GetPosition().x * 0.1 - 64.0 ) + (GameMain.camera.position.x) &&
 					position.y - size.y < (GameMain.camera.position.y) - (Mouse.GetPosition().y * 0.1 - 36.0 ) && position.y + size.y > (GameMain.camera.position.y) - (Mouse.GetPosition().y * 0.1 - 36.0 )) {
-					
+
 					for( int i = 0; i < StructObjectManager.GetListSize(); i ++ ) {
 						if( StructObjectManager.GetStructObject(i).GetHold() ) {
 							return;
@@ -181,7 +181,7 @@ public class StructObject {
 				hold = false;
 			}
 		}
-		
+
 		// とりあえず右クリックで解放
 		if( Mouse.RightClick() ) {
 			hold = false;
@@ -225,7 +225,7 @@ public class StructObject {
 			}
 		}
 	}
-	
+
 	/**
 	 * 生成
 	 */
@@ -249,18 +249,18 @@ public class StructObject {
 		bd.type = BodyType.StaticBody;
 		body = GameMain.world.createBody(bd);
 		body.setTransform(positionX, positionY, 0);
-		
+
 		Texture texture = new Texture(Gdx.files.internal("data/stage_object.png"));
 		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		TextureRegion tmpRegion = new TextureRegion(texture, 0, 128, 256, 256);
 		sprite.add(new Sprite(tmpRegion));
 		sprite.get(0).setOrigin(sprite.get(0).getWidth() * 0.5f, sprite.get(0).getHeight() * 0.5f);
 		sprite.get(0).setScale(ScrollNinja.scale);
-		
+
 		size.x = 5.0f;
 		size.y = 6.0f;
 	}
-	
+
 	/**
 	 * 敵生成
 	 */
@@ -270,7 +270,7 @@ public class StructObject {
 		bd.type	= BodyType.StaticBody;
 		body = GameMain.world.createBody(bd);
 		body.setTransform(positionX, positionY, 0);			// 最初の位置
-		
+
 		Texture texture = new Texture(Gdx.files.internal("data/enemy.png"));
 		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		TextureRegion region = new TextureRegion(texture, 0, 0, 64, 64);
@@ -279,7 +279,7 @@ public class StructObject {
 		sprite.add(new Sprite(region));
 		sprite.get(0).setOrigin(sprite.get(0).getWidth() * 0.5f, sprite.get(0).getHeight() * 0.5f);
 		sprite.get(0).setScale(ScrollNinja.scale);
-		
+
 		// 当たり判定のサイズ
 		size.x = 1.6f;
 		size.y = 2.4f;

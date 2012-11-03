@@ -36,6 +36,12 @@ public interface IPlayerController
 	boolean jump();
 	
 	/**
+	 * 空中でのジャンプの操作状態を取得する。
+	 * @return	空中でのジャンプの操作がある場合はtrue
+	 */
+	boolean aerialJump();
+	
+	/**
 	 * 攻撃の操作状態を取得する。
 	 * @return	攻撃の操作がある場合はtrue
 	 */
@@ -46,6 +52,12 @@ public interface IPlayerController
 	 * @return	鉤縄を投げる操作がある場合はtrue
 	 */
 	boolean kaginawaThrow();
+	
+	/**
+	 * 鉤縄を縮める操作の状態を取得する。
+	 * @return	鉤縄を縮める操作がある場合はtrue
+	 */
+	boolean kaginawaShrink();
 	
 	/**
 	 * 鉤縄にぶら下がる操作の状態を取得する。

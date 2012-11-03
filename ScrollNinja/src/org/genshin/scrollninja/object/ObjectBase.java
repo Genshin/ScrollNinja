@@ -57,6 +57,11 @@ public abstract class ObjectBase {
 	 */
 	public void Draw()
 	{
+		// アクティブでなければ描画しない
+		if(!body.isActive())
+			return;
+		
+		// 描画処理
 		SpriteBatch sb = GameMain.spriteBatch;
 		Vector2 pos = body.getPosition();
 		float rot = (float) Math.toDegrees(body.getAngle());

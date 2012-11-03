@@ -171,6 +171,7 @@ public class GameMain implements Screen{
 		if(pause.GetgotoTitleFlag()) {
 			pause.SetgotoTitleFlag(false);
 			gameState = GO_TO_MENU;
+			pauseState = PAUSE_INIT;
 
 		}
 	}
@@ -184,10 +185,11 @@ public class GameMain implements Screen{
 	}
 	
 	/*
-	 * 
+	 * InitPause
+	 * キャラクターの描画位置初期化
 	 * */
 	public void InitPause() {
-		pause.init();
+		pause.Init();
 		pauseState = PAUSE_UPDATE;
 	}
 

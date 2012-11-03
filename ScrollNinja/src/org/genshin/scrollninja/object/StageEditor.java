@@ -1,31 +1,21 @@
 package org.genshin.scrollninja.object;
 
-
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Frame;
-import java.awt.event.KeyListener;
-
 import org.genshin.scrollninja.BackgroundManager;
-import org.genshin.scrollninja.EditTable;
-import org.genshin.scrollninja.EnemyManager;
 import org.genshin.scrollninja.FileOperation;
 import org.genshin.scrollninja.GameMain;
-import org.genshin.scrollninja.Keyboard;
 import org.genshin.scrollninja.Mouse;
 import org.genshin.scrollninja.ScrollNinja;
-import org.genshin.scrollninja.StructObject;
 import org.genshin.scrollninja.StructObjectManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.utils.ScreenUtils;
 
-public class StageEditor implements Screen {
+public class StageEditor implements Screen, InputProcessor {
 
 	// 変数
 	private  int 			stageNum;
@@ -33,13 +23,12 @@ public class StageEditor implements Screen {
 	private  int			count[] = new int[10];			// トリガー取得の為のカウント用変数
 	private  Vector2		position = new Vector2( 0.0f, 0.0f);
 	private  Box2DDebugRenderer	renderer = new Box2DDebugRenderer();
-	private  EditTable	editTable = new EditTable();
-	private Keyboard keyboard = new Keyboard();
-	private Container cont = new Container();
-	
+//	private  ItemWindow itemWindow = new ItemWindow();
+//	private EditTable editTable = new EditTable();
+//	private LayerWindow layerWindow = new LayerWindow();
+
 	public StageEditor() {
-		cont.addKeyListener(keyboard);
-		cont.setVisible(true);
+		Gdx.input.setInputProcessor(this);
 	}
 
 	/**
@@ -48,12 +37,15 @@ public class StageEditor implements Screen {
 	 */
 	public  void Init() {
 		priority = 9;
-		
+
 		for(int i = 0; i < 10; i++ ) {
 			count[i] = 0;
 		}
 		
-		editTable.Init();
+
+//		itemWindow.Init();
+//		editTable.Init();
+	//	layerWindow.Init();
 	}
 
 	/**
@@ -63,42 +55,12 @@ public class StageEditor implements Screen {
 		Move();
 		Mouse.Update();
 		Priority();
-		editTable.Update();
+//		editTable.Update();
+//		layerWindow.Update();
 
 		// キャラクター
 		StructObjectManager.Update(priority);
 
-		//TODO		トリガー実装はよ
-		if( Gdx.input.isKeyPressed(Keys.B)) {
-			count[0] ++;
-		}
-		else {
-			count[0] = 0;
-		}
-
-		if( Gdx.input.isKeyPressed(Keys.K)) {
-			count[1] ++;
-		}
-		else {
-			count[1] = 0;
-		}
-		
-		if( Gdx.input.isKeyPressed(Keys.L)) {
-			count[2] ++;
-		}
-		else {
-			count[2] = 0;
-		}
-		
-		if( Gdx.input.isKeyPressed(Keys.BACKSPACE)) {
-			count[3] ++;
-		}
-		else {
-			count[3] = 0;
-		}
-		
-		if( count[0] == 1 ) {
-		}
 		if( count[1] == 1 ) {
 			FileOperation.Save();
 		}
@@ -146,22 +108,6 @@ public class StageEditor implements Screen {
 		renderer.render(GameMain.world, GameMain.camera.combined);
 		GameMain.world.step(Gdx.graphics.getDeltaTime(), 20, 20);
 	}
-
-	/**
-	 * マウス処理
-	 */
-/*	private void Mouse() {
-		if(Mouse.LeftClick()) {
-			for( int i = 0; i < EnemyManager.normalEnemyList.size(); i++ ) {
-				if( EnemyManager.enemyList.get(i).GetPosition().x - 1.6 < (Mouse.GetPosition().x * 0.1 - 64.0 ) + (GameMain.camera.position.x) &&
-					EnemyManager.enemyList.get(i).GetPosition().x + 1.6 > (Mouse.GetPosition().x * 0.1 - 64.0 ) + (GameMain.camera.position.x) &&
-					EnemyManager.enemyList.get(i).GetPosition().y - 2.4 < (GameMain.camera.position.y) - (Mouse.GetPosition().y * 0.1 - 36.0 ) &&
-					EnemyManager.enemyList.get(i).GetPosition().y + 2.4 > (GameMain.camera.position.y) - (Mouse.GetPosition().y * 0.1 - 36.0 )) {
-					EnemyManager.enemyList.get(i).SetPosition((float)((Mouse.GetPosition().x * 0.1 - 64.0 ) + (GameMain.camera.position.x)),(float)((GameMain.camera.position.y) - (Mouse.GetPosition().y * 0.1 - 36.0 )));
-				}
-			}
-		}
-	}*/
 
 	/**
 	 * カメラ移動
@@ -285,5 +231,61 @@ public class StageEditor implements Screen {
 
 	@Override
 	public void dispose() {}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		// TODO 自動生成されたメソッド・スタブ
+		return false;
+	}
+
+	@Override
+	public boolean keyUp(int keycode) {
+		// TODO 自動生成されたメソッド・スタブ
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped(char character) {
+		// TODO 自動生成されたメソッド・スタブ
+		System.out.println(character);
+		return false;
+	}
+
+	@Override
+	public boolean touchDown(int x, int y, int pointer, int button) {
+		// TODO 自動生成されたメソッド・スタブ
+		return false;
+	}
+
+	@Override
+	public boolean touchUp(int x, int y, int pointer, int button) {
+		// TODO 自動生成されたメソッド・スタブ
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged(int x, int y, int pointer) {
+		// TODO 自動生成されたメソッド・スタブ
+//		System.out.println(position.x);
+//		System.out.println(position.y);
+		System.out.println("x:" + x);
+		System.out.println("y:" + y);
+		position.y = y;
+		position.x = x;
+//		GameMain.camera.update();
+		return false;
+	}
+
+	@Override
+	public boolean touchMoved(int x, int y) {
+		// TODO 自動生成されたメソッド・スタブ
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		// TODO 自動生成されたメソッド・スタブ
+		return false;
+	}
 
 }

@@ -87,16 +87,16 @@ public class Interface {
 		chakra.setScale(ScrollNinja.scale);
 
 		// 最初の設定；
-		percentHP = 1;
-		countHP = percentHP;
-		percentChakra = 0;
-		countChakra = percentChakra;
-		calculateHP = false;
-		calculateChakra = false;
-		transrateX = 0;
-		stopHP = true;
-		stopChakra = true;
-		stateTime = 0;
+		percentHP 			= 1;
+		countHP 			= percentHP;
+		percentChakra 	= 0;
+		countChakra 		= percentChakra;
+		calculateHP 		= false;
+		calculateChakra 	= false;
+		stopHP 			= true;
+		stopChakra 		= true;
+		stateTime 			= 0;
+		transrateX 		= 0;
 	}
 
 	/**
@@ -111,9 +111,10 @@ public class Interface {
 		hp.setPosition
 			(cameraPosition.x - 256 - (ScrollNinja.window.x * 0.5f * ScrollNinja.scale - 25.6f) - transrateX,
 			 cameraPosition.y - 64 + (ScrollNinja.window.y * 0.5f * ScrollNinja.scale -6.4f));
-		scrollRight.setPosition(cameraPosition.x - 64 -
-							(ScrollNinja.window.x * 0.5f * ScrollNinja.scale - 6.4f) + 44.5f - transrateX,
-							 cameraPosition.y - 64 + (ScrollNinja.window.y * 0.5f * ScrollNinja.scale -6.4f));
+		
+		scrollRight.setPosition(
+				cameraPosition.x - 64 -(ScrollNinja.window.x * 0.5f * ScrollNinja.scale - 6.4f) + 44.5f - transrateX,
+				 cameraPosition.y - 64 + (ScrollNinja.window.y * 0.5f * ScrollNinja.scale -6.4f));
 		/*
 		hyoutan.setPosition(scroll.getX() + 51.2f, scroll.getY());
 		chakra.setPosition(hyoutan.getX(), hyoutan.getY());
