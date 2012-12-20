@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- スプライト関連の設定 -->
+<SpriteParam>
+	<!-- マウスカーソル -->
+	<Cursor>
+		<Sprite>
+			<Texture>
+				<FilePath>gui/cursor.png</FilePath>
+			</Texture>
+		</Sprite>
+	</Cursor>
+	
+	<!-- 忍者の上半身 -->
+	<NinjaBody>
+		<Sprite>
+			<Texture>
+				<FilePath>ninja/ninja.png</FilePath>
+				<Width>64</Width>
+				<Height>64</Height>
+			</Texture>
+			<OriginY>-8.0</OriginY>
+			<!-- 待機アニメーション -->iginY();
+		sprite.translate(originX, originY);
+			<Animation>
+				<Name>Stay</Name>
+				<StartX>4</StartX>
+				<StartY>3</StartY>
+				<FrameCount>4</FrameCount>
+				<Time>6</Time>
+			</Animation>
+			<!-- 走りアニメーション -->
+			<Animation>
+				<Name>Run</Name>
+				<StartY>1</StartY>
+				<FrameCount>6</FrameCount>
+				<Time>6</Time>
+			</Animation>
+			<!-- ダッシュアニメーション -->
+			<Animation>
+				<Name>Dash</Name>
+				<StartY>2</StartY>
+				<FrameCount>6</FrameCount>
+				<Time>4</Time>
+			</Animation>
+			<!-- ジャンプアニメーション -->
+			<Animation>
+				<Name>Jump</Name>
+				<StartY>1</StartY>
+			</Animation>
+			<!-- 鉤縄状態時のアニメーション -->
+			<Animation>
+				<Name>Kaginawa</Name>
+				<StartY>5</StartY>
+				<FrameCount>4</FrameCount>
+				<Time>6</Time>
+			</Animation>
+		</Sprite>
+	</NinjaBody>
+	
+	<!-- 忍者の下半身 -->
+	<NinjaFoot>
+		<Sprite>
+			<Texture>
+				<FilePath>ninja/ninja.png</FilePath>
+				<Width>64</Width>
+				<Height>64</Height>
+			</Texture>
+			<OriginY>-8.0</OriginY>
+			<!-- 待機アニメーション -->
+			<Animation>
+				<Name>Stay</Name>
+				<StartY>3</StartY>
+				<FrameCount>4</FrameCount>
+				<Time>6</Time>
+			</Animation>
+			<!-- 走りアニメーション -->
+			<Animation>
+				<Name>Run</Name>
+				<StartY>0</StartY>
+				<FrameCount>6</FrameCount>
+				<Time>6</Time>
+			</Animation>
+			<!-- ダッシュアニメーション -->
+			<Animation>
+				<Name>Dash</Name>
+				<StartY>0</StartY>
+				<FrameCount>6</FrameCount>
+				<Time>4</Time>
+			</Animation>
+			<!-- ジャンプアニメーション -->
+			<Animation>
+				<Name>Jump</Name>
+				<StartY>0</StartY>
+			</Animation>
+			<!-- 鉤縄状態時のアニメーション（前方向） -->
+			<Animation>
+				<Name>KaginawaFront</Name>
+				<StartY>6</StartY>
+				<FrameCount>4</FrameCount>
+				<Time>6</Time>
+			</Animation>
+			<!-- 鉤縄状態時のアニメーション（後ろ方向） -->
+			<Animation>
+				<Name>KaginawaBack</Name>
+				<StartX>4</StartX>
+				<StartY>6</StartY>
+				<FrameCount>4</FrameCount>
+				<Time>6</Time>
+			</Animation>
+		</Sprite>
+	</NinjaFoot>
+	
+	<!-- 鉤縄の鉤 -->
+	<KaginawaAnchor>
+		<Sprite>
+			<Texture>
+				<FilePath>weapon/kaginawa_anchor.png</FilePath>
+			</Texture>
+			<Width>16.0</Width>
+			<Height>16.0</Height>
+			<OriginX>-8.0</OriginX>
+		</Sprite>
+	</KaginawaAnchor>
+	
+	<!-- 鉤縄の縄 -->
+	<KaginawaRope>
+		<Sprite>
+			<Texture>
+				<FilePath>weapon/kaginawa_rope.png</FilePath>
+			</Texture>
+			<OriginX>-32.0</OriginX>
+		</Sprite>
+	</KaginawaRope>
+	
+	<!-- ダッシュ時の煙エフェクト -->
+	<DashSmoke>
+		<Sprite>
+			<Texture>
+				<FilePath>effect/dash_smoke.png</FilePath>
+			</Texture>
+			<OriginX>-48.0</OriginX>
+		</Sprite>
+	</DashSmoke>
+	
+	<!-- ジャンプ時の煙エフェクト -->
+	<JumpSmoke>
+		<Sprite>
+			<Texture>
+				<FilePath>effect/jump_smoke.png</FilePath>
+			</Texture>
+			<OriginY>8.0</OriginY>
+		</Sprite>
+	</JumpSmoke>
+	
+	<!-- カンペ（コピペ用。ゲーム中では使わない） -->
+	<CunningPaper>
+		<Sprite>
+			<!-- テクスチャの設定 -->
+			<Texture>
+				<!-- テクスチャのファイルパス（ディレクトリパスはglobal_param.xmlで指定する） -->
+				<FilePath>hoge.png</FilePath>
+				<!-- UVマップの開始座標　単位：ピクセル　省略時：0 -->
+				<X>0</X>
+				<Y>0</Y>
+				<!-- UVマップの大きさ　単位：ピクセル　省略時：テクスチャの大きさ -->
+				<Width>64</Width>
+				<Height>64</Height>
+			</Texture>
+			<!-- スプライトのローカル座標　省略時：0.0 -->
+			<X>0.0</X>
+			<Y>0.0</Y>
+			<!-- スプライトの大きさ　省略時：テクスチャに合わせる -->
+			<Width>64.0</Width>
+			<Height>64.0</Height>
+			<!-- 中央となる座標（0.0を指定するとど真ん中）　省略時：0.0 -->
+			<OriginX>0.0</OriginX>
+			<OriginY>0.0</OriginY>
+			<!-- アニメーションの設定 -->
+			<Animation>
+				<!-- アニメーションの名前 -->
+				<Name>hoge</Name>
+				<!-- 1フレーム目の座標　単位：0から始まる、フレーム単位で数えた時の座標　省略時：0 -->
+				<StartX>0</StartX>
+				<StartY>0</StartY>
+				<!-- アニメーションのフレーム数　省略時：1 -->
+				<FrameCount>8</FrameCount>
+				<!-- 1フレームの時間　省略時：1 -->
+				<Time>3</Time>
+				<!-- ループフラグ　省略時：true -->
+				<Looping>true</Looping>
+			</Animation>
+		</Sprite>
+	</CunningPaper>
+</SpriteParam>
+

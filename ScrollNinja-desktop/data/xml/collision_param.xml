@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 衝突関連の設定 -->
+<CollisionParam>
+	<!-- 忍者 -->
+	<Ninja>
+		<!-- 上半身 -->
+		<Body>
+			<FixtureDef>
+				<Friction>0.0</Friction>
+			</FixtureDef>
+		</Body>
+		<!-- 下半身 -->
+		<Foot>
+			<FixtureDef>
+				<Dencity>1.0</Dencity>
+				<Friction>0.8</Friction>
+			</FixtureDef>
+		</Foot>
+	</Ninja>
+	
+	<!-- 鉤縄 -->
+	<Kaginawa>
+		<FixtureDef>
+			<CircleShape>
+				<Radius>10.0</Radius>
+			</CircleShape>
+		</FixtureDef>
+	</Kaginawa>
+	
+	<!-- 地形（ステージの設定ファイルに隔離するべきかも） -->
+	<Terrain>
+		<FixtureDef>
+			<Dencity>1.0</Dencity>
+			<Friction>0.5</Friction>
+		</FixtureDef>
+	</Terrain>
+	
+	<!-- カンペ（コピペ用。ゲーム中では使わない） -->
+	<CunningPaper>
+		<FixtureDef>
+			<!-- 密度　単位：kg/m^2　省略時：0.0 -->
+			<Density>0.0</Density>
+			<!-- 摩擦　範囲：[0, 1]　省略時：0.2 -->
+			<Friction>0.2</Friction>
+			<!-- 反発力　範囲：[0, 1]　省略時：0.0 -->
+			<Restitution>0.0</Restitution>
+			
+			<!-- ＊以下、未実装のパラメータ -->
+			
+			<!-- 矩形の衝突判定 -->
+			<PolygonShape>
+				<!-- 矩形の大きさ　省略時：1.0 -->
+				<Width>1.0</Width>
+				<Height>1.0</Height>
+				<!-- 中央となる座標（0.0を指定するとど真ん中）　省略時：0.0 -->
+				<OriginX>0.0</OriginX>
+				<OriginY>0.0</OriginY>
+				<!-- 角度　範囲：[0, 360)　省略時：0.0 -->
+				<Angle>0.0</Angle>
+			</PolygonShape>
+			<!-- 円の衝突判定 -->
+			<CircleShape>
+				<!-- 半径　省略時：1.0 -->
+				<Radius>1.0</Radius>
+				<!-- 中央となる座標（0.0を指定するとど真ん中）　省略時：0.0 -->
+				<OriginX>0.0</OriginX>
+				<OriginY>0.0</OriginY>
+			</CircleShape>
+			<!-- BodyEditorで作成した衝突判定 -->
+			<BodyEditorShape>
+				<!-- ファイル名（ディレクトリパスはglobal_param.xmlで指定する） -->
+				<FilePath>hoge.json</FilePath>
+				<!-- BodyEditor内で設定した名称 -->
+				<FixtureName>hoge</FixtureName>
+			</BodyEditorShape>
+		</FixtureDef>
+	</CunningPaper>
+</CollisionParam>
+

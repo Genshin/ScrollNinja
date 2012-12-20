@@ -24,5 +24,6 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>com.google.gwt.eclipse.core.gwtNature</nature>
+		<nature>com.google.gdt.eclipse.core.webAppNature</nature>
 	</natures>
 </projectDescription>

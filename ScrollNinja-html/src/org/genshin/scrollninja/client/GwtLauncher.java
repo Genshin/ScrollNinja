@@ -1,6 +1,7 @@
 package org.genshin.scrollninja.client;
 
 import org.genshin.scrollninja.ScrollNinja;
+
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;

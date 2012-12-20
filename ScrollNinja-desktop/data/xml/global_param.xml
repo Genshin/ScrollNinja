@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- グローバルパラメータ -->
+<GlobalParam>
+	<!-- クライアント領域の解像度 -->
+	<ClientWidth>1280</ClientWidth>
+	<ClientHeight>720</ClientHeight>
+	
+	<!-- フルスクリーンフラグ -->
+	<Fullscreen>false</Fullscreen>
+	
+	<!-- 世界の最高速度（毎秒）　初期値：128.0 -->
+	<MaxWorldVelocity>12800.0</MaxWorldVelocity>
+	
+	<!-- 重力加速度（毎秒）　初期値：1000.0 -->
+	<Gravity>800.0</Gravity>
+	
+	<!-- XMLファイルを格納するディレクトリ -->
+	<XMLDirectoryPath>data/xml/</XMLDirectoryPath>
+	<!-- 衝突関連のファイルを格納するディレクトリ -->
+	<CollisionDirectoryPath>data/</CollisionDirectoryPath>
+	<!-- テクスチャを格納するディレクトリ -->
+	<TextureDirectoryPath>data/textures/</TextureDirectoryPath>
+	
+	<!-- オブジェクト関連の設定ファイル -->
+	<ObjectParamXMLFileName>object_param.xml</ObjectParamXMLFileName>
+	<!-- 衝突関連の設定ファイル -->
+	<CollisionParamXMLFileName>collision_param.xml</CollisionParamXMLFileName>
+	<!-- スプライト関連の設定ファイル -->
+	<SpriteParamXMLFileName>sprite_param.xml</SpriteParamXMLFileName>
+</GlobalParam>
+

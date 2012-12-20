@@ -3,6 +3,7 @@
 *.DS_Store
 *.log
 *.class
+ScrollNinja.jar
 doc/
 bin/
 ScrollNinja-html/.gwt/.gwt-log
